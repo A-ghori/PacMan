@@ -20,29 +20,28 @@ let wallImage;
 //X = wall, O = skip, P = pac man, ' ' = food
 //Ghosts: b = blue, o = orange, p = pink, r = red
 const tileMap = [
-     "XXXXXXXXXXXXXXXXXXX",
-    "X        X        X",
-    "X XX XXX X XXX XX X",
-    "X                 X",
-    "X XX X XXXXX X XX X",
-    "X    X       X    X",
-    "XXXX XXXX XXXX XXXX",
-    "OOOX X       X XOOO",
-    "XXXX X XXrXX X XXXX",
-    "O       bpo       O",
-    "XXXX X XXXXX X XXXX",
-    "OOOX X       X XOOO",
-    "XXXX X XXXXX X XXXX",
-    "X        X        X",
-    "X XX XXX X XXX XX X",
-    "X  X     P     X  X",
-    "XX X X XXXXX X X XX",
-    "X    X   X   X    X",
-    "X XXXXXX X XXXXXX X",
-    "X                 X",
-    "XXXXXXXXXXXXXXXXXXX" 
-]
-
+  "XXXXXXXXXXXXXXXXXXX",
+  "X        X        X",
+  "X XX XXX X XXX XX X",
+  "X XX XXX X XXX XX X",
+  "X                 X",
+  "X XX X XXXXX X XX X",
+  "X    X       X    X",
+  "XXXX XXXX XXXX XXXX",
+  "OOOX X       X XOOO",
+  "XXXX X XXrXX X XXXX",
+  "O       bpo       O",
+  "XXXX X XXXXX X XXXX",
+  "OOOX X       X XOOO",
+  "XXXX X XXXXX X XXXX",
+  "X        X        X",
+  "X XX XXX X XXX XX X",
+  "X  X     P     X  X",
+  "XX X X XXXXX X X XX",
+  "X    X   X   X    X",
+  "X XXXXXX X XXXXXX X",
+  "XXXXXXXXXXXXXXXXXXX"
+];
 
 // Set is a JS datastructe use for prevenet duplicate sets in an array if duplicate happens then also it choose only one set the orginal one 
 const walls = new Set();
@@ -63,6 +62,10 @@ window.onload = function () {
     context = board.getContext('2d'); // used for drawing on the board ;
 loadImages();
 loadMap();
+update();
+console.log(board.width);
+console.log(`The BoardWidth is ${Boardwidth}`);
+console.log(`The BoardHeight is ${Boardheight}`);
 console.log(walls.size);
 console.log(foods.size);
 console.log(`We have ${ghosts.size} fucking ghosts have in this fucking game`);
@@ -84,11 +87,11 @@ function loadImages () {
     blueGhostImage = new Image();
     blueGhostImage.src = "./blueGhost.png";
 
-    pacManleft = new Image();
-    pacManleft.src = "./pacmanLeft.png";
+    pacmanLeftImage = new Image();
+    pacmanLeftImage.src = "./pacmanLeft.png";
 
-    pacManRight = new Image();
-    pacManRight.src = "./pacmanRight.png";
+    pacmanRightImage = new Image();
+    pacmanRightImage.src = "./pacmanRight.png";
 
     pacmanDownImage = new Image();
     pacmanDownImage.src = "./pacmanDown.png"
@@ -151,7 +154,48 @@ function loadMap() {
 }
 
 
+function update(){
     
+// First i need to create move function for pacman and ghosts
+move();
+
+    //Second i have to create a draw function to draw all the elements on the board
+    draw(); 
+
+
+// SetTimeInterval, setTimeout, requestAnimationframe -> its fps 
+// so let say i need 20 fps ->  so 1 sec = 1000 milsec and i need 20 sec it means 2000 milsec => 
+// Time per Frame (ms): Milliseconds per Frame = 1000 / FPS.
+//For 120 FPS: 1000 / 120 = 8.33ms.
+
+const fps = 120
+setInterval(update,fps);
+}
+  
+
+// Drawing function
+function draw(){
+context.clearRect(0,0, Boardwidth, Boardheight); // to clear the board before drawing again 
+    // Formula -> drawImage(image, dx, dy, dWidth, dHeight)
+    context.drawImage(pacman.image, pacman.x, pacman.y, pacman.width, pacman.height);
+    
+    for(const wall of walls){
+        context.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height)
+    }
+    for(const ghost of ghosts){
+        context.drawImage(ghost.image, ghost.x, ghost.y,ghost.width, ghost.height)
+    }
+// For Foods 
+context.fillStyle = 'brown ';
+for(const food of foods){
+    context.fillRect(food.x, food.y, food.width, food.height);
+}
+}
+
+function move(){
+
+}
+
     
     //  BLOCKS CREATION 
     class Block {
