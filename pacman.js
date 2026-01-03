@@ -10,39 +10,43 @@ let context;
 let orangeGhostImage;
 let blueGhostImage;
 let pinkGhostImage;
+let scaredGhostImage;
 let pacmanLeftImage;
+//let cherryImage;
 let pacmanRightImage;
 let pacmanUpImage;
 let pacmanDownImage;
 let wallImage;
 
-let debugText = "";
-let debugEl;
+//let debugText = "";
+//let debugEl;
+let keyMessage = "";
+let keyMessageTimer = 0;
 
 //X = wall, O = skip, P = pac man, ' ' = food
 //Ghosts: b = blue, o = orange, p = pink, r = red
 const tileMap = [
   "XXXXXXXXXXXXXXXXXXX",
-  "X        X        X",
-  "X XX XXX X XXX XX X",
-  "X XX XXX X XXX XX X",
-  "X                 X",
-  "X XX X XXXXX X XX X",
+  "X        X        XX",
+  "Xb XX XXX    XX XX X",
+  "X XX XXX X   XXXX XX X X",
+  "X   s              X",
+  "X XX X XXXXX  X XX X",
   "X    X       X    X",
   "XXXX XXXX XXXX XXXX",
-  "OOOX X       X XOOO",
-  "XXXX X XXrXX X XXXX",
-  "O       bpo       O",
+  "OOOX X      X OOO X",
+  "XXXX X XXrpXX X XXXX",
+  "X         X        X",
   "XXXX X XXXXX X XXXX",
-  "OOOX X       X XOOO",
+  "OOOX X            X",
   "XXXX X XXXXX X XXXX",
   "X        X        X",
-  "X XX XXX XX XXX XX X",
-  "X  X     P     X X",
-  "XX X X XXXXX X X XX",
-  "X    X   X   X    X",
-  "X XXXXXX X XXXXXX X",
-  "XXXXXXXXXXXXXXXXXXX"
+  "X XX XXX XX XXX XX XX",
+  "X  X     P     X   XX",
+  "XX X X XXXXX X     XX",
+  "X    X   X   X    XX",
+  "X XXXXXX X XXXXXX oX",
+  "XXXXXXXXXXXXXXXXXXXXXX"
 ];
 
 // Set is a JS datastructe use for prevenet duplicate sets in an array if duplicate happens then also it choose only one set the orginal one 
@@ -58,13 +62,14 @@ let lives = 3;
 let gameOver = false;
 
     window.onload = function () {
+        
     board = document.getElementById('board');
     board.width = Boardwidth;
     board.height = Boardheight;
     context = board.getContext('2d'); // used for drawing on the board ;
     loadImages();
     loadMap();
-    update();
+
 
 
 
@@ -77,7 +82,6 @@ let gameOver = false;
 //setInterval(update,fps);
 
 // Just add arrown key and left right key for pacman movement test 
-document.addEventListener("keyup", movePacman);
 
 console.log(board.width);
 console.log(`The BoardWidth is ${Boardwidth}`);
@@ -86,7 +90,13 @@ console.log(walls.size);
 console.log(foods.size);
 console.log(`We have ${ghosts.size} fucking ghosts have in this fucking game`);
 
-
+// For ghost movement 
+for(let ghost of ghosts){
+    const randomDirection = directions[Math.floor(Math.random() * 4)]; // * 4 because we have total 4 directions and math.floor to round off (0.3999) the number and math.random to get random number between 0 to 1 and multiply by 4 to get number between 0 to 3 and use that number to get direction from directions array so we get random direction for ghost movement
+    ghost.updateDirection(randomDirection);
+}
+update();
+document.addEventListener("keyup", movePacman);
 }
 
 // Loading all Images
@@ -102,6 +112,9 @@ function loadImages () {
 
     blueGhostImage = new Image();
     blueGhostImage.src = "./blueGhost.png";
+
+    scaredGhostImage = new Image();
+    scaredGhostImage.src = "./scaredGhost.png";
 
     pacmanLeftImage = new Image();
     pacmanLeftImage.src = "./pacmanLeft.png";
@@ -155,6 +168,10 @@ function loadMap() {
                 const ghost = new Block(orangeGhostImage, x, y, tileSize, tileSize);
                 ghosts.add(ghost);
             }
+            else if(tileMapChar === "r") { // scared ghost
+                const ghost = new Block(scaredGhostImage, x, y, tileSize, tileSize);
+                ghosts.add(ghost);
+            }
             else if(tileMapChar === ' '){ // for foods
                 // Because Food = 4  and tileSize = 32 
                 //centerOffset = (containerSize - objectSize) / 2 => (32 - 4 ) / 2 = 14
@@ -171,7 +188,15 @@ function loadMap() {
 
 
 function update(){
-    
+    if(gameOver){
+        return;
+    }
+        // Key message timer update
+    if (keyMessageTimer > 0) {
+        keyMessageTimer--;
+        if (keyMessageTimer === 0) keyMessage = "";
+    }
+    // First i need to create move function for pacman and ghosts
 // First i need to create move function for pacman and ghosts
     move();
 
@@ -187,27 +212,25 @@ function update(){
 function draw(){
         
     
-    if (debugEl) debugEl.textContent = debugText;
+    //if (debugEl) debugEl.textContent = debugText;
 
 
     context.clearRect(0,0, Boardwidth, Boardheight); // to clear the board before drawing again 
     // Formula -> drawImage(image, dx, dy, dWidth, dHeight)
     
-
-    debugEl = document.createElement('div');
-    debugEl.id = 'debug-overlay';
-    debugEl.style.position = 'fixed';
-    debugEl.style.top = '12px';
-    debugEl.style.left = '12px';
-    debugEl.style.padding = '8px 12px';
-    debugEl.style.background = 'rgba(0,0,0,0.7)';
-    debugEl.style.color = '#fff';
-    debugEl.style.font = '16px Arial';
-    debugEl.style.borderRadius = '6px';
-    debugEl.style.zIndex = '9999';
-    debugEl.textContent = '';
-    document.body.appendChild(debugEl);
-
+    //debugEl.id = 'debug-overlay';
+    //debugEl = document.createElement('div');
+    //debugEl.style.position = 'fixed';
+    //debugEl.style.top = '12px';
+    //debugEl.style.left = '12px';
+    //debugEl.style.padding = '8px 12px';
+    //debugEl.style.background = 'rgba(0,0,0,0.7)';
+    //debugEl.style.color = '#fff';
+    //debugEl.style.font = '16px Arial';
+    //debugEl.style.borderRadius = '6px';
+    //debugEl.style.zIndex = '9999';
+    //debugEl.textContent = '';
+    //document.body.appendChild(debugEl);
 
     context.drawImage(pacman.image, pacman.x, pacman.y, pacman.width, pacman.height);
     
@@ -217,26 +240,37 @@ function draw(){
     for(const ghost of ghosts){
         context.drawImage(ghost.image, ghost.x, ghost.y,ghost.width, ghost.height)
     }
-// For Foods 
-context.fillStyle = 'brown ';
-for(const food of foods){
-    context.fillRect(food.x, food.y, food.width, food.height);
+    // For Foods 
+    context.fillStyle = 'brown ';
+    for(const food of foods){
+        context.fillRect(food.x, food.y, food.width, food.height);
+    }
+    // HUD
+    context.fillStyle = "white";
+    context.font = "16px Arial";
+    context.fillText(`Score: ${score}`, 10, 20);
+    context.fillText(`Lives: ${lives}`, 10, 40);
+    if (keyMessageTimer > 0) {
+        context.fillText(keyMessage, 10, 60);
+    }
 }
-}
+
+
+// Move Function
 
 function move(){
 pacman.x += pacman.velocityX;
 pacman.y += pacman.velocityY;
 
-ghosts.x += ghosts.velocityX;
-ghosts.y += ghosts.velocityY;
+
 
 
 // check Wall Collision for Pacman
     for(let wall of walls){
         if(collision(pacman, wall)){
-            pacman.x -= pacman.velocityX;
-            pacman.y -= pacman.velocityY;
+//pacman.x -= pacman.velocityX;
+//pacman.y -= pacman.velocitY;
+gameOver = true;
       break;
         }
 
@@ -254,32 +288,83 @@ ghosts.y += ghosts.velocityY;
 
     // Ghosts Collision with Pacman 
     for(let ghost of ghosts){
-        if(collision(pacman , ghost)){
+        if(collision(pacman, ghost)){
             lives -= 1;
-            score -= 50; 
+            if(score === 0){
+                gameOver = true;
+                debugText = `Game Over! You have no lives left. Final Score: ${score}`;
+                return;
+            }
+            resetPositions();
             debugText = `Ghosts Ne Teri Maa Ko Chod Di Score: ${score} Lives Left: ${lives}`;
         }
-    }
-    
+      //   const randomDirection = directions[Math.floor(Math.random() * 4)];
+        //    ghost.updateDirection(randomDirection);
+          //  ghost.x += ghost .velocityX;
+            //ghost.y += ghost.velocityY;
+                // if (Math.abs(ghost.y - tileSize*9) / tileSize < 0.5 && ghost.directions !== 'U' && ghost.directions !== 'D') {
+            //ghost.updateDirection(Math.random() < 0.5 ? 'L' : 'R');
+        
+              if (Math.abs(ghost.y - tileSize*9) / tileSize < 0.5 && ghost.directions !== 'U' && ghost.directions !== 'D') {
+            ghost.updateDirection('U');
+        }
+        
+
+        ghost.x += ghost.velocityX;
+        ghost.y += ghost.velocityY;
+            
+              for(let wall of walls.values()){
+                // ghost.x < 0 = left side of the board  or ghost.x + ghost.width > Boardwidth = right side of the board
+                if(collision(ghost , wall) || ghost.x < 0 || ghost.x + ghost.width > Boardwidth){
+
+                    ghost.x -= ghost.velocityX;
+                    ghost.y -= ghost.velocityY;
+                    const newDirection = directions[Math.floor(Math.random() * 4)];
+                    ghost.updateDirection(newDirection);
+                break;
+                }
+            }
+
+            //lives -= 1;
+            //score -= 50; 
+            //debugText = `Ghosts Ne Teri Maa Ko Chod Di Score: ${score} Lives Left: ${lives}`;
+        }
 }
+
 
 
 // movePacman Function
     function movePacman(event){
+        if(gameOver){
+            location.reload();
+            loadMap();
+            score = 0;
+            lives = 3;
+            gameOver = false;
+            keyMessage = "Game Restarted! Good Luck!";
+            keyMessageTimer = 20;
+            update()
+            return;
+        }
+
         if(event.code === "ArrowUp" || event.code === "KeyW" ){
-            debugText = "Upar Kar MotherChod";
+            keyMessage = "Upar Kar Motherchod";
+            keyMessageTimer = 20;
             pacman.updateDirection('U');
         }
         else if(event.code === "ArrowDown" || event.code === "KeyS"){
-            debugText = "Niche Kar Be Lawre";
+            keyMessage = "Niche Kar Bhosdike";
+            keyMessageTimer = 20;
             pacman.updateDirection('D');
         }
         else if(event.code === "ArrowLeft" || event.code === "KeyA"){
-            debugText = "Du Duu Piyaga ?";
+            keyMessage = "DuuDu Piyega ?";
+            keyMessageTimer = 20;
             pacman.updateDirection('L')
         } 
         else if(event.code === "ArrowRight" || event.code === "KeyD"){
-            debugText = "Right ME TERI MAE KI CHUU";
+            keyMessage  = "Right ME TERI MAE KI CHUU";
+            keyMessageTimer = 20;
             pacman.updateDirection('R')
         } 
         else {
@@ -297,9 +382,23 @@ ghosts.y += ghosts.velocityY;
     }
 
 
+function resetPositions(){
+pacman.reset();
+ pacman.velocityX = 0;
+pacman.velocityY = 0;
+for(let ghost of ghosts){
+   
+            ghost.reset();
+
+        }
+}
 
     //  BLOCKS CREATION 
     class Block {
+        reset(){
+            this.x = this.startX;
+            this.y = this.startY;
+        }
         constructor(image,x,y,width,height){
                     this.x = x;
                     this.y = y;
@@ -318,21 +417,23 @@ ghosts.y += ghosts.velocityY;
                 }
 
 
-            updateDirection(direction){
-            this.direction = direction;
-            const prev = this.direction;
-         this.x += this.velocityX;
-            this.y += this.velocityY;
-
-            this.updateVelocity();
-for (let wall of walls){
-    if(collision(this, wall)){
-        this.direction = prev;
+          updateDirection(direction) {
+        const prevDirection = this.direction;
+        this.direction = direction;
         this.updateVelocity();
-        return 
-    }
-}
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        
+        for (let wall of walls.values()) {
+            if (collision(this, wall)) {
+                this.x -= this.velocityX;
+                this.y -= this.velocityY;
+                this.direction = prevDirection;
+                this.updateVelocity();
+                return;
             }
+        }
+    }
 
 
         updateVelocity(){ // I have total 4 direction l , r, u , d
