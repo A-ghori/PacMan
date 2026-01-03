@@ -80,3 +80,7 @@ A classic Pac-Man game implemented in JavaScript using HTML5 Canvas. Navigate Pa
 - Inspired by the original Pac-Man arcade game.
 - Images: Ensure you have the required PNG files (not included in the repository).
 - Collision detection formula sourced from standard rectangle collision algorithms.
+
+## Note
+- This is for experiment purpose more updates are incoming so chill and HAPPY CODING 
+- Thank You from Aghori's Side
